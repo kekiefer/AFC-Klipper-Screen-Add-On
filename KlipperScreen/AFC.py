@@ -50,65 +50,65 @@ def get_widths(widget, name=None):
     logging.info(f"{name:20s} | Preferred: {pref_nat:4d}px | Allocated: {alloc:4d}px")
 
 class AFCsystem:
-    def __init__(self, current_load, num_units, num_lanes, num_extruders, spoolman, current_toolchange, number_of_toolchanges, extruders, hubs, buffers):
-        self.current_load = current_load
-        self.num_units = num_units
-        self.num_lanes = num_lanes
-        self.num_extruders = num_extruders
-        self.spoolman = spoolman
-        self.current_toolchange = current_toolchange
-        self.number_of_toolchanges = number_of_toolchanges
-        self.extruders = extruders
-        self.hubs = hubs
-        self.buffers = buffers
+    def __init__(self, **kwargs):
+        self.current_load = kwargs.get("current_load")
+        self.num_units  = kwargs.get("num_units")
+        self.num_lanes = kwargs.get("num_lanes")
+        self.num_extruders = kwargs.get("num_extruders")
+        self.spoolman = kwargs.get("spoolman")
+        self.current_toolchange = kwargs.get("current_toolchange")
+        self.number_of_toolchanges = kwargs.get("number_of_toolchanges")
+        self.extruders = kwargs.get("extruders")
+        self.hubs = kwargs.get("hubs")
+        self.buffers = kwargs.get("buffers")
 
 class Extruder:
-    def __init__(self, tool_stn, tool_stn_unload, tool_sensor_after_extruder, tool_unload_speed, tool_load_speed, buffer, lane_loaded, tool_start, tool_start_status, tool_end, tool_end_status, lanes):
-        self.tool_stn = tool_stn
-        self.tool_stn_unload = tool_stn_unload
-        self.tool_sensor_after_extruder = tool_sensor_after_extruder
-        self.tool_unload_speed = tool_unload_speed
-        self.tool_load_speed = tool_load_speed
-        self.buffer = buffer
-        self.lane_loaded = lane_loaded
-        self.tool_start = tool_start
-        self.tool_start_status = tool_start_status
-        self.tool_end = tool_end
-        self.tool_end_status = tool_end_status
-        self.lanes = lanes
+    def __init__(self, **kwargs):
+        self.tool_stn = kwargs.get("tool_stn")
+        self.tool_stn_unload = kwargs.get("tool_stn_unload")
+        self.tool_sensor_after_extruder = kwargs.get("tool_sensor_after_extruder")
+        self.tool_unload_speed = kwargs.get("tool_unload_speed")
+        self.tool_load_speed = kwargs.get("tool_load_speed")
+        self.buffer = kwargs.get("buffer")
+        self.lane_loaded = kwargs.get("lane_loaded")
+        self.tool_start = kwargs.get("tool_start")
+        self.tool_start_status = kwargs.get("tool_start_status")
+        self.tool_end = kwargs.get("tool_end")
+        self.tool_end_status = kwargs.get("tool_end_status")
+        self.lanes = kwargs.get("lanes")
 
 class Hub:
-    def __init__(self, state, cut, cut_cmd, cut_dist, cut_clear, cut_min_length, cut_servo_pass_angle, cut_servo_clip_angle, cut_servo_prep_angle, lanes, afc_bowden_length):
-        self.state = state
-        self.cut = cut
-        self.cut_cmd = cut_cmd
-        self.cut_dist = cut_dist
-        self.cut_clear = cut_clear
-        self.cut_min_length = cut_min_length
-        self.cut_servo_pass_angle = cut_servo_pass_angle
-        self.cut_servo_clip_angle = cut_servo_clip_angle
-        self.cut_servo_prep_angle = cut_servo_prep_angle
-        self.lanes = lanes
-        self.afc_bowden_length = afc_bowden_length
+    def __init__(self, **kwargs):
+        self.state = kwargs.get("state")
+        self.cut = kwargs.get("cut")
+        self.cut_cmd = kwargs.get("cut_cmd")
+        self.cut_dist = kwargs.get("cut_dist")
+        self.cut_clear = kwargs.get("cut_clear")
+        self.cut_min_length = kwargs.get("cut_min_length")
+        self.cut_servo_pass_angle = kwargs.get("cut_servo_pass_angle")
+        self.cut_servo_clip_angle = kwargs.get("cut_servo_clip_angle")
+        self.cut_servo_prep_angle = kwargs.get("cut_servo_prep_angle")
+        self.lanes = kwargs.get("lanes")
+        self.afc_bowden_length = kwargs.get("afc_bowden_length")
 
 class Buffer:
-    def __init__(self, state, lanes, enabled, belay=None):
-        self.state = state
-        self.lanes = lanes
-        self.enabled = enabled
-        self.belay = belay
+    def __init__(self, **kwargs):
+        self.state = kwargs.get("state")
+        self.lanes = kwargs.get("lanes")
+        self.enabled = kwargs.get("enabled")
+        self.belay = kwargs.get("belay")
 
 class AFCunit:
-    def __init__(self, name, lanes, system_type):
-        self.name = name
-        self.lanes = lanes
-        self.system_type = system_type
+    def __init__(self, **kwargs):
+        self.name = kwargs.get("name")
+        self.lanes = kwargs.get("lanes")
+        self.system_type = kwargs.get("system_type")
 
 class AFClane:
-    def __init__(self, name, unit, lane_data):
-        self.name = name
-        self.unit = unit
-        self.reinit(lane_data)
+    def __init__(self, **kwargs):
+        self.name = kwargs.get("name")
+        self.unit = kwargs.get("unit")
+        self.reinit(kwargs.get("lane_data"))
 
     def reinit(self, lane_data):
         self.hub = lane_data.get("hub")
