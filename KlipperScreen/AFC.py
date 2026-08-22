@@ -116,7 +116,10 @@ class AFClane:
         self.buffer = lane_data.get("buffer")
         self.buffer_status = lane_data.get("buffer_status")
         self.lane = int(lane_data.get("lane", 0))
-        self.map = lane_data.get("map")
+        self.map = lane_data.get("map", [])
+        # Ensure map is always a list for consistency with AFC's new data structure
+        if isinstance(self.map, str):
+            self.map = [self.map] if self.map else []
         self.load = bool(lane_data.get("load", False))
         self.prep = bool(lane_data.get("prep", False))
         self.tool_loaded = bool(lane_data.get("tool_loaded", False))
@@ -1299,16 +1302,21 @@ class Panel(ScreenPanel):
 
         initial_selection = None
         for t_value, lane_name in options.items():
-            if t_value == lane.map:
+            if isinstance(lane.map, list) and t_value in lane.map:
+                initial_selection = t_value
+                break
+            elif not isinstance(lane.map, list) and t_value == lane.map:
                 initial_selection = t_value
                 break
 
         if initial_selection is None:
-            logging.warning(f"Initial map value '{lane.map}' not found in options. Defaulting to the first.")
+            map_display = ", ".join(lane.map) if isinstance(lane.map, list) else lane.map
+            logging.warning(f"Initial map value '{map_display}' not found in options. Defaulting to the first.")
             initial_selection = list(options.keys())[0]
 
         # Create the menu button
-        label = Gtk.Label(label=lane.map)
+        map_display = ", ".join(lane.map) if isinstance(lane.map, list) else (lane.map or "NONE")
+        label = Gtk.Label(label=map_display)
         menu_button = Gtk.MenuButton()
         menu_button.add(label)
         menu_button.set_halign(Gtk.Align.END)
@@ -1461,8 +1469,15 @@ class Panel(ScreenPanel):
                         self.handle_lane_status_update(lane, lane_status)
 
                     new_map = lane_data.get("map", lane.map)
+                    # Normalize both to lists for comparison
+                    if isinstance(new_map, str):
+                        new_map = [new_map] if new_map else []
+                    if not isinstance(lane.map, list):
+                        lane.map = [lane.map] if lane.map else []
                     if lane.map != new_map:
-                        logging.info(f"Updating mapping for {lane.name}: {lane.map} → {new_map}")
+                        map_display = ", ".join(lane.map) if isinstance(lane.map, list) else lane.map
+                        new_display = ", ".join(new_map) if isinstance(new_map, list) else new_map
+                        logging.info(f"Updating mapping for {lane.name}: {map_display} → {new_display}")
                         lane.map = new_map
                         self.update_lane_map(lane)
 
@@ -1643,7 +1658,8 @@ class Panel(ScreenPanel):
         if lane_map_widget:
             label = lane_map_widget.get_child()
             if label:
-                label.set_text(lane.map)
+                map_display = ", ".join(lane.map) if isinstance(lane.map, list) else (lane.map or "NONE")
+                label.set_text(map_display)
 
     def update_lane_runout(self, lane):
         # Update the runout lane part of the UI
@@ -1726,14 +1742,15 @@ class Panel(ScreenPanel):
         :param lane: The current lane object.
         :param label: The label inside the MenuButton that displays the current value.
         """
-        if selected_value and selected_value != lane.map:
-            old_mapping = lane.map
-            lane.map = selected_value  # Update lane map
+        if selected_value and selected_value not in lane.map:
+            old_mapping = ", ".join(lane.map) if isinstance(lane.map, list) else lane.map
+            lane.map.append(selected_value)  # Add to the list of mappings
 
             logging.info(f"Updated default mapping for {lane.name}: {old_mapping} → {selected_value}")
 
             # Update the label text in the MenuButton
-            label.set_text(selected_value)
+            map_display = ", ".join(lane.map) if isinstance(lane.map, list) else lane.map
+            label.set_text(map_display)
 
             # Send G-code to update the mapping
             self._screen._send_action(menu_button, "printer.gcode.script", {
@@ -1804,13 +1821,14 @@ class Panel(ScreenPanel):
         print(f"Icon button clicked for lane: {lane.name}")
 
     def on_map_button_clicked(self, button, lane):
-        print(f"Map button clicked: {lane.map}")
+        map_display = ", ".join(lane.map) if isinstance(lane.map, list) else lane.map
+        print(f"Map button clicked: {map_display}")
 
     def on_lane_inf_changed(self, menu_button, value, lane, label):
-        if value and value != lane.map:
+        if value and value != lane.runout_lane:
             old_runout = lane.runout_lane
-            lane.runout_lane = value  # Update lane map
-            logging.info(f"Updated default mapping for {lane.name}: {old_runout} → {value}")
+            lane.runout_lane = value  # Update lane runout
+            logging.info(f"Updated default runout for {lane.name}: {old_runout} → {value}")
             label.set_text(f"{value} ∞")
 
 
